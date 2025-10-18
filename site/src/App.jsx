@@ -39,12 +39,12 @@ function App() {
             placeholder="Enter topic"
             value={topic}
             onChange={e => setTopic(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-white/50 backdrop-blur-sm border border-white/30 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+            className="px-4 py-3 rounded-xl bg-white/50 backdrop-blur-sm border border-white/30 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-300 transition text-black"
           />
           <select
             value={importance}
             onChange={e => setImportance(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-white/50 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+            className="px-4 py-3 rounded-xl bg-white/50 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-300 transition text-black"
           >
             <option value="low">Low</option>
             <option value="moderate">Moderate</option>
