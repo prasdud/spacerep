@@ -2,6 +2,11 @@
 
 SpaceRep is a spaced repetition scheduling application designed to help learners retain information effectively by integrating revision reminders directly into their Google Calendar. Users enter the topics they are studying, and SpaceRep intelligently schedules spaced revision sessions, taking into account existing events to optimize learning without conflicts.
 
+## Todo
+- Add better logging and exception handling for core/api/routes.py
+- Backend system design
+- Write unit tests for all functional modules
+
 ## Features
 
 - **Easy Topic Entry:** Simple frontend input for users to add study topics.
@@ -15,7 +20,7 @@ SpaceRep is a spaced repetition scheduling application designed to help learners
 ## Technology Stack
 
 - **Backend:** FastAPI
-- **Frontend:** Minimal and intuitive UI (framework agnostic)
+- **Frontend:** Minimal and intuitive UI (React)
 - **Calendar API:** Google Calendar API for scheduling reminders
 
 ## How It Works
