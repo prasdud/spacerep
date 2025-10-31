@@ -1,9 +1,11 @@
+import datetime
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 import os, json, dotenv
+import logging as log
 
 app = FastAPI()
 dotenv.load_dotenv()
@@ -37,15 +39,17 @@ flow = Flow.from_client_config(
 )
 flow.redirect_uri = redirect_uri  # Set the redirect_uri on the flow object
 
-# Step 1: Redirect to Google for consent
+# Redirect to Google for consent
 @app.get("/auth")
 def auth():
     authorization_url, state = flow.authorization_url(
-        access_type="offline", prompt="consent", include_granted_scopes="true"
+        access_type="offline", # request refresh token
+        prompt="consent",   # force consent screen to show for returning users
     )
+    log.info(f"Authorization URL: {authorization_url}")
     return RedirectResponse(authorization_url)
 
-# Step 2: Google redirects back with code; exchange it for tokens
+# Google redirects back with code; exchange it for tokens
 @app.get("/auth/callback")
 def auth_callback(request: Request):
     flow.fetch_token(authorization_response=str(request.url))
@@ -60,15 +64,49 @@ def auth_callback(request: Request):
     }
     # In production: store this in your DB, tied to the authenticated user
     with open("tokens.json", "w") as f:
-        json.dump(tokens, f)
+        json.dump(tokens, f, indent=2)
     return JSONResponse({"status": "ok", "message": "Google Calendar connected"})
 
-# Step 3: Use stored tokens to call Calendar API
+# Use stored tokens to call Calendar API
 @app.get("/calendar")
 def get_calendar_events():
+
+    creds = None
     with open("tokens.json") as f:
         tokens = json.load(f)
     creds = Credentials(**tokens)
-    service = build("calendar", "v3", credentials=creds)
-    events = service.events().list(calendarId="primary").execute()
-    return events
+
+    try:
+        service = build("calendar", "v3", credentials=creds)
+
+        # Call the Calendar API
+        now = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
+        print("Getting the upcoming 10 events")
+        events_result = (
+            service.events()
+            .list(
+                calendarId="primary",
+                timeMin=now,
+                maxResults=10,
+                singleEvents=True,
+                orderBy="startTime",
+            )
+            .execute()
+        )
+        events = events_result.get("items", [])
+
+        if not events:
+            print("No upcoming events found.")
+            return
+
+        # Prints the start and name of the next 10 events
+        response = []
+        for event in events:
+            start = event["start"].get("dateTime", event["start"].get("date"))
+            log.info(start, event["summary"])
+            response.append({"start": start, "summary": event["summary"]})
+        
+        return JSONResponse(response)
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
